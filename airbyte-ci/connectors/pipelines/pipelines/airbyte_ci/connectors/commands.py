@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Set, Tuple
 
 import asyncclick as click
-from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+from connector_ops.utils import Connector, ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
 from pipelines import main_logger
 from pipelines.cli.airbyte_ci import wrap_in_secret
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -78,9 +78,27 @@ def get_selected_connectors_with_modified_files(
     ]
     # The selected connectors are the intersection of the selected connectors by name, support_level, language, simpleeval query and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
+    selected_connectors_with_variants = set()
+
+    # Map connectors to their strict-encrypt variants
+    connectors_to_strict_encrypt_variants = {
+        Connector(c.relative_connector_path.replace("-strict-encrypt", "")): c
+        for c in ALL_CONNECTORS
+        if c.technical_name.endswith("-strict-encrypt")
+    }
+    # Map strict-encrypt variants to their main connector
+    strict_encrypt_variants_to_connectors = {v: k for k, v in connectors_to_strict_encrypt_variants.items()}
+    for s in selected_connectors:
+        selected_connectors_with_variants.add(s)
+        if s in connectors_to_strict_encrypt_variants:
+            # Add the strict encrypt variant to the selected connector if the connector has a variant
+            selected_connectors_with_variants.add(connectors_to_strict_encrypt_variants[s])
+        if s in strict_encrypt_variants_to_connectors:
+            # Add the main connector to the selected connector if the strict-encrypt variant is selected
+            selected_connectors_with_variants.add(strict_encrypt_variants_to_connectors[s])
 
     selected_connectors_with_modified_files = []
-    for connector in selected_connectors:
+    for connector in selected_connectors_with_variants:
         connector_with_modified_files = ConnectorWithModifiedFiles(
             relative_connector_path=connector.relative_connector_path,
             modified_files=get_connector_modified_files(connector, modified_files),
@@ -90,6 +108,7 @@ def get_selected_connectors_with_modified_files(
         else:
             if connector_with_modified_files.has_metadata_change:
                 selected_connectors_with_modified_files.append(connector_with_modified_files)
+
     return selected_connectors_with_modified_files
 
 
