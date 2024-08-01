@@ -12,6 +12,7 @@ from .source import SourceFacebookMarketing
 
 
 def run():
+    print("test!!!")
     source = SourceFacebookMarketing()
     MigrateAccountIdToArray.migrate(sys.argv[1:], source)
     MigrateIncludeDeletedToStatusFilters.migrate(sys.argv[1:], source)

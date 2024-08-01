@@ -10,5 +10,6 @@ from source_facebook_pages import SourceFacebookPages
 
 
 def run():
+    print("test!!!")
     source = SourceFacebookPages()
     launch(source, sys.argv[1:])
