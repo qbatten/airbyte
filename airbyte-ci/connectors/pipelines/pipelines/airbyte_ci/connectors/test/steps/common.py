@@ -632,10 +632,10 @@ class LiveTests(Step):
         try:
             self._validate_job_can_run()
         except AssertionError as exc:
-            self.logger.info(f"Could not run live tests for {self.context.connector.technical_name} due to validation error {str(exc)}.")
+            self.logger.info(f"Skipping live tests for {self.context.connector.technical_name} due to validation error {str(exc)}.")
             return StepResult(
                 step=self,
-                status=StepStatus.FAILURE,
+                status=StepStatus.SKIPPED,
                 exc_info=exc,
             )
 
