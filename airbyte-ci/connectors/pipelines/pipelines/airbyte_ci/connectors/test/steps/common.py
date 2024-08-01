@@ -557,7 +557,7 @@ class LiveTests(Step):
         self.connector_image = context.docker_image.split(":")[0]
         options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS, {})
 
-        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
+        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.REGRESSION.value)
         self.connection_id = self._get_connection_id(options)
         self.pr_url = self._get_pr_url(options)
 
